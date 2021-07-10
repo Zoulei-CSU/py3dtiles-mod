@@ -6,16 +6,18 @@ from setuptools import setup, find_packages
 here = os.path.abspath(os.path.dirname(__file__))
 
 requirements = (
-    'numpy>=1.9.0',  # the real requirements is probably higher than that
+#    'numpy>=1.9.0',  # the real requirements is probably higher than that
+    'numpy>=1.9.0,<1.20.0',
     'pyproj',
     'cython',
     'triangle',
     'psycopg2-binary',
-    'laspy',
+    'laspy<2.0.0', #必须用1.0系列，2.0接口变化太大
     'numba',
     'psutil',
     'lz4',
-    'pyzmq'
+    'pyzmq',
+	'PySide2<6.0.0'
 )
 
 dev_requirements = (
@@ -61,8 +63,8 @@ setup(
     description="Python module for 3D tiles format",
     long_description=read('README.rst'),
     url='https://gitlab.com/Oslandia/py3dtiles',
-    author='Oslandia',
-    author_email='contact@oslandia.com',
+    author='Oslandia, Zoulei',
+    author_email='contact@oslandia.com, lei.zou@southgis.com',
     license='Apache License Version 2.0',
     python_requires='>=3.5',
     classifiers=[
@@ -78,7 +80,7 @@ setup(
         'doc': doc_requirements
     },
     entry_points={
-        'console_scripts': ['py3dtiles=py3dtiles.command_line:main'],
+        'console_scripts': ['py3dtiles=py3dtiles.command_line:main', 'PointCloudConverter=py3dtiles.point_cloud_convert:main'],
     },
     zip_safe=False  # zip packaging conflicts with Numba cache (#25)
 )

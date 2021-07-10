@@ -15,7 +15,8 @@ def is_point_far_enough(points, tested_point, squared_min_distance):
     return farenough
 
 
-@jit(cache=True, nogil=True)
+#下面的jit会产生大量警告，先关闭
+#@jit(cache=True, nogil=True)
 def xyz_to_child_index(xyz, aabb_center):
     test = np.greater_equal(xyz - aabb_center, 0).astype(np.int8)
     return np.sum(np.left_shift(test, [2, 1, 0]), axis=1)

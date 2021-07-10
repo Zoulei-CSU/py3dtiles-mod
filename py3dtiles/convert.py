@@ -105,7 +105,8 @@ def zmq_process(activity_graph, srs_out_wkt, srs_in_wkt, node_store, octree_meta
 
     # Socket to receive messages on
     skt = context.socket(zmq.DEALER)
-    skt.connect('ipc:///tmp/py3dtiles1')
+    #skt.connect('ipc:///tmp/py3dtiles1')
+    skt.connect('tcp://localhost:5555') #Windows上只支持tcp协议
 
     startup_time = time.time()
     idle_time = 0
@@ -276,9 +277,9 @@ def init_parser(subparser, str2bool):
         default=int(total_memory_MB / 10),
         type=int)
     parser.add_argument(
-        '--srs_out', help='SRS to convert the output with (numeric part of the EPSG code)', type=str)
+        '--srs_out', help='SRS to convert the output with (numeric part of the EPSG code, or proj4 strings, or prj filename). Recommended 4978.', type=str)
     parser.add_argument(
-        '--srs_in', help='Override input SRS (numeric part of the EPSG code)', type=str)
+        '--srs_in', help='Override input SRS (numeric part of the EPSG code, or proj4 strings, or prj filename)', type=str)
     parser.add_argument(
         '--fraction',
         help='Percentage of the pointcloud to process.',
@@ -316,6 +317,21 @@ def main(args):
         print('No SRS information in input files, you should specify it with --srs_in')
         sys.exit(1)
 
+def initSRS(srs_str):
+    if srs_str.endswith('.prj'):
+        # 这是个WKT文件，需要读文件
+        with open(srs_str, 'r') as f:
+            wkt = f.read()
+            return CRS.from_wkt(wkt)
+    elif srs_str.startswith('+proj'):
+        # 这是proj字符串
+        return CRS.from_proj4(srs_str)
+    else:
+        # ESPG代码
+        if not srs_str.startswith('epsg:'):
+            srs_str = 'epsg:{}'.format(srs_str)
+        return CRS.from_string(srs_str)
+    return None
 
 def convert(files,
             outfolder='./3dtiles',
@@ -378,10 +394,20 @@ def convert(files,
     transformer = None
     srs_out_wkt = None
     srs_in_wkt = None
+
+    if srs_out == 'epsg:4978':
+        srs_out = '4978'
+    elif srs_out == '4978':
+        pass
+    else:
+        print('Recommended use of output coordinate system 4978.')
+
     if srs_out is not None:
-        crs_out = CRS('epsg:{}'.format(srs_out))
+        # crs_out = CRS('epsg:{}'.format(srs_out))
+        crs_out = initSRS(srs_out)
         if srs_in is not None:
-            crs_in = CRS('epsg:{}'.format(srs_in))
+            # crs_in = CRS('epsg:{}'.format(srs_in))
+            crs_in = initSRS(srs_in)
         elif infos['srs_in'] is None:
             raise SrsInMissingException('No SRS informations in the provided files')
         else:
@@ -494,7 +520,8 @@ def convert(files,
     context = zmq.Context()
 
     zmq_skt = context.socket(zmq.ROUTER)
-    zmq_skt.bind('ipc:///tmp/py3dtiles1')
+    #zmq_skt.bind('ipc:///tmp/py3dtiles1')
+    zmq_skt.bind('tcp://*:5555')  #Windows上只支持tcp协议
 
     zmq_idle_clients = []
 
