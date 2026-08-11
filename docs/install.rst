@@ -2,8 +2,9 @@ Install
 -------
 
 Dependencies:
-- PDAL > 1.7
-- llvm for numba
+- Python 3.10 through 3.14
+- NumPy 2.0 or later
+- laspy 2.x
 
 From pypi
 ~~~~~~~~~~~~

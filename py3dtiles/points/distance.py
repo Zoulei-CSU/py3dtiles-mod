@@ -15,7 +15,7 @@ def is_point_far_enough(points, tested_point, squared_min_distance):
     return farenough
 
 
-#ÏÂÃæµÄjit»á²úÉú´óÁ¿¾¯¸æ£¬ÏÈ¹Ø±Õ
+#ä¸‹é¢çš„jitä¼šäº§ç”Ÿå¤§é‡è­¦å‘Šï¼Œå…ˆå…³é—­
 #@jit(cache=True, nogil=True)
 def xyz_to_child_index(xyz, aabb_center):
     test = np.greater_equal(xyz - aabb_center, 0).astype(np.int8)

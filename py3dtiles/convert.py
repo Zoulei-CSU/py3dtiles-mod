@@ -95,18 +95,23 @@ def make_rotation_matrix(z1, z2):
 OctreeMetadata = namedtuple('OctreeMetadata', ['aabb', 'spacing', 'scale'])
 
 
+def create_transformer(srs_in, srs_out):
+    """Create a CRS transformer that treats point-cloud coordinates as X/Y."""
+    return Transformer.from_crs(srs_in, srs_out, always_xy=True)
+
+
 def zmq_process(activity_graph, srs_out_wkt, srs_in_wkt, node_store, octree_metadata, folder, write_rgb, verbosity):
     transformer = None
     if srs_out_wkt is not None:
         crs_out = CRS(srs_out_wkt)
         crs_in = CRS(srs_in_wkt)
-        transformer = Transformer.from_crs(crs_in, crs_out)
+        transformer = create_transformer(crs_in, crs_out)
     context = zmq.Context()
 
     # Socket to receive messages on
     skt = context.socket(zmq.DEALER)
     #skt.connect('ipc:///tmp/py3dtiles1')
-    skt.connect('tcp://localhost:5555') #WindowsÉÏÖ»Ö§³ÖtcpĞ­Òé
+    skt.connect('tcp://localhost:5555') #Windowsä¸Šåªæ”¯æŒtcpåè®®
 
     startup_time = time.time()
     idle_time = 0
@@ -319,15 +324,15 @@ def main(args):
 
 def initSRS(srs_str):
     if srs_str.endswith('.prj'):
-        # ÕâÊÇ¸öWKTÎÄ¼ş£¬ĞèÒª¶ÁÎÄ¼ş
+        # è¿™æ˜¯ä¸ªWKTæ–‡ä»¶ï¼Œéœ€è¦è¯»æ–‡ä»¶
         with open(srs_str, 'r') as f:
             wkt = f.read()
             return CRS.from_wkt(wkt)
     elif srs_str.startswith('+proj'):
-        # ÕâÊÇproj×Ö·û´®
+        # è¿™æ˜¯projå­—ç¬¦ä¸²
         return CRS.from_proj4(srs_str)
     else:
-        # ESPG´úÂë
+        # ESPGä»£ç 
         if not srs_str.startswith('epsg:'):
             srs_str = 'epsg:{}'.format(srs_str)
         return CRS.from_string(srs_str)
@@ -416,7 +421,7 @@ def convert(files,
         srs_out_wkt = crs_out.to_wkt()
         srs_in_wkt = crs_in.to_wkt()
 
-        transformer = Transformer.from_crs(crs_in, crs_out)
+        transformer = create_transformer(crs_in, crs_out)
 
         bl = np.array(list(transformer.transform(
             infos['aabb'][0][0], infos['aabb'][0][1], infos['aabb'][0][2])))
@@ -521,7 +526,7 @@ def convert(files,
 
     zmq_skt = context.socket(zmq.ROUTER)
     #zmq_skt.bind('ipc:///tmp/py3dtiles1')
-    zmq_skt.bind('tcp://*:5555')  #WindowsÉÏÖ»Ö§³ÖtcpĞ­Òé
+    zmq_skt.bind('tcp://*:5555')  #Windowsä¸Šåªæ”¯æŒtcpåè®®
 
     zmq_idle_clients = []
 

@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "py3dtiles"
+version = "3.0.0"
+description = "Python tools for 3D Tiles conversion"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [
+  {name = "Oslandia", email = "contact@oslandia.com"},
+  {name = "Zoulei", email = "zoulei.csu@gmail.com"},
+]
+dependencies = [
+  "numpy>=2.0",
+  "laspy>=2.6",
+  "pyproj>=3.6",
+  "numba>=0.61",
+  "psutil>=5.9",
+  "lz4>=4.3",
+  "pyzmq>=25",
+]
+
+[project.optional-dependencies]
+postgis = [
+  "psycopg2-binary>=2.9",
+]
+test = [
+  "pytest>=8",
+  "pytest-benchmark>=4",
+]
+doc = [
+  "sphinx",
+  "sphinx-rtd-theme",
+  "sphinx-multiversion",
+]
+
+[project.scripts]
+py3dtiles = "py3dtiles.command_line:main"
+PointCloudConverter = "py3dtiles.point_cloud_convert:main"
+
+[tool.setuptools.packages.find]
+include = ["py3dtiles*"]
